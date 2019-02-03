@@ -16,7 +16,9 @@ from keras.layers.embeddings import Embedding
 from keras.callbacks import ModelCheckpoint
 
 import pickle
-
+# xgboost issue: https://github.com/dmlc/xgboost/issues/1715
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 def embed_features(X, saved_embeddings_fname):
     # f_embeddings = open("embeddings_shuffled.pickle", "rb")
@@ -71,6 +73,9 @@ def split_features(X):
 
 class Model(object):
 
+    def guess(self, X_val):
+        raise Exception("not implemented")
+    
     def evaluate(self, X_val, y_val):
         assert(min(y_val) > 0)
         guessed_sales = self.guess(X_val)
@@ -95,8 +100,10 @@ class RF(Model):
 
     def __init__(self, X_train, y_train, X_val, y_val):
         super().__init__()
-        self.clf = RandomForestRegressor(n_estimators=200, verbose=True, max_depth=35, min_samples_split=2,
-                                         min_samples_leaf=1)
+        self.clf = RandomForestRegressor(
+            n_estimators=200, 
+            verbose=True, max_depth=35, min_samples_split=2,
+            min_samples_leaf=1)
         self.clf.fit(X_train, numpy.log(y_train))
         print("Result on validation data: ", self.evaluate(X_val, y_val))
 
@@ -183,7 +190,7 @@ class NN_with_EntityEmbedding(Model):
 
     def __init__(self, X_train, y_train, X_val, y_val):
         super().__init__()
-        self.epochs = 10
+        self.epochs = 1
         self.checkpointer = ModelCheckpoint(filepath="best_model_weights.hdf5", verbose=1, save_best_only=True)
         self.max_log_y = max(numpy.max(numpy.log(y_train)), numpy.max(numpy.log(y_val)))
         self.__build_keras_model()

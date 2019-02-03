@@ -45,16 +45,19 @@ for record in train_data:
         fl = feature_list(record)
         train_data_X.append(fl)
         train_data_y.append(int(record['Sales']))
-print("Number of train datapoints: ", len(train_data_y))
 
+print("Number of train datapoints: ", len(train_data_y))
 print(min(train_data_y), max(train_data_y))
 
 full_X = train_data_X
 full_X = np.array(full_X)
 train_data_X = np.array(train_data_X)
+
+# LabelEncoder
 les = []
 for i in range(train_data_X.shape[1]):
     le = preprocessing.LabelEncoder()
+    # full data
     le.fit(full_X[:, i])
     les.append(le)
     train_data_X[:, i] = le.transform(train_data_X[:, i])
@@ -62,6 +65,7 @@ for i in range(train_data_X.shape[1]):
 with open('les.pickle', 'wb') as f:
     pickle.dump(les, f, -1)
 
+# save training data
 train_data_X = train_data_X.astype(int)
 train_data_y = np.array(train_data_y)
 

@@ -13,7 +13,18 @@ Please refer to [Keras](https://github.com/fchollet/keras) for more details rega
 
 Next, run the following scripts to extract the csv files and prepare the features:
 
+<!-- conda install -c anaconda tensorflow -->
 ```
+
+pip install tensorflow
+
+kaggle competitions files rossmann-store-sales
+kaggle competitions download rossmann-store-sales
+unzip *.zip
+rm store.csv.zip
+rm test.csv.zip
+rm train.csv.zip
+
 python3 extract_csv_files.py
 python3 prepare_features.py
 ``` 
@@ -24,7 +35,8 @@ To run the models:
 python3 train_test_model.py
 ```
 
-You can anaylize the embeddings with the ipython notebook included. This is the learned embeeding of German States printed in 2D (with the Kaggle branch):
+You can anaylize the embeddings with the ipython notebook included. 
+This is the learned embeeding of German States printed in 2D (with the Kaggle branch):
 
 [![](https://plot.ly/~entron/0/.png)](https://plot.ly/~entron/0.embed)
 
