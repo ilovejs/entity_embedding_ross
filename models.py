@@ -119,7 +119,8 @@ class SVM(Model):
         self.y_train = y_train
         self.__normalize_data()
         self.clf = SVR(kernel='linear', degree=3, gamma='auto', coef0=0.0, tol=0.001,
-                       C=1.0, epsilon=0.1, shrinking=True, cache_size=200, verbose=False, max_iter=-1)
+                       C=1.0, epsilon=0.1, shrinking=True, cache_size=200, 
+                       verbose=False, max_iter=-1)
 
         self.clf.fit(self.X_train, numpy.log(self.y_train))
         print("Result on validation data: ", self.evaluate(X_val, y_val))

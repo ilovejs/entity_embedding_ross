@@ -75,18 +75,20 @@ N_MODEL = 1
 # for i in range(5):
 #     models.append(NN(X_train, y_train, X_val, y_val))
 
-print("Fitting RF...")
+print("Fitting RF...around 1.5min")
 # models.append(RF(X_train, y_train, X_val, y_val))
 
-print("Fitting KNN...")
+print("Fitting KNN...fast")
 # models.append(KNN(X_train, y_train, X_val, y_val))
 
-print("Fitting XGBoost...")
+print("Fitting XGBoost...iterative")
 # models.append(XGBoost(X_train, y_train, X_val, y_val))
 
+#TODO: no in report, taking too long 5min no print log
 print("Fitting SVM...")
-models.append(SVM(X_train, y_train, X_val, y_val))
+# models.append(SVM(X_train, y_train, X_val, y_val))
 
+# Turn on if using NN-with-embedding
 # if save_embeddings:
 #     model = models[0].model
 #     store_embedding = model.get_layer('store_embedding').get_weights()[0]
