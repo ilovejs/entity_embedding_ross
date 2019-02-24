@@ -23,7 +23,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
 def embed_features(X, saved_embeddings_fname):
-    # f_embeddings = open("embeddings_shuffled.pickle", "rb")
+    # Loading embeddings_shuffled.pickle
     f_embeddings = open(saved_embeddings_fname, "rb")
     embeddings = pickle.load(f_embeddings)
 

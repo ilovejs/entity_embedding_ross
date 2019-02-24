@@ -10,6 +10,8 @@ f = open('feature_train_data.pickle', 'rb')
 dictlist = [{} for _ in range(1115)]
 for feature, sale in zip(X, y):
     store = feature[1]
+    # dict key is tuple of feature => value is sale
+    # TODO: what are 2:7
     dictlist[store][tuple(feature[2:7])] = sale
 
 with open("embeddings.pickle", 'rb') as f:
@@ -39,6 +41,7 @@ n = 10000
 pairs = set()
 while len(pairs) < n:
     a, b = random.sample(range(1115), 2)
+    # a, b in order
     if a < b:
         pairs.add((a, b))
 
@@ -46,6 +49,9 @@ while len(pairs) < n:
 # Calcuate distances
 with open('distances.csv', 'w') as f:
     for pair in pairs:
+        
         d = distance(pair, dictlist)
+
         d_em = embed_distance(pair, store_embeddings)
+        # print to file
         print(d, d_em, file=f)
