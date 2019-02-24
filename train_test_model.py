@@ -27,14 +27,14 @@ numpy.random.seed(123)
 train_ratio = 0.9
 shuffle_data = False
 one_hot_as_input = False
+
 embeddings_as_input = False
+
+# set save_embeddings to True to create this file
 save_embeddings = True
-saved_embeddings_fname = "embeddings.pickle"  # set save_embeddings to True to create this file
+saved_embeddings_fname = "embeddings.pickle"
 
-f = open('feature_train_data.pickle', 'rb')
-# nice trick
-(X, y) = pickle.load(f)
-
+(X, y) = pickle.load(open('feature_train_data.pickle', 'rb'))
 num_records = len(X)
 train_size = int(train_ratio * num_records)
 
@@ -68,9 +68,9 @@ print("Number of samples used for training: " + str(y_train.shape[0]))
 models = []
 N_MODEL = 1
 
-# print("Fitting NN_with_EntityEmbedding...")
-# for i in range(N_MODEL):
-#     models.append(NN_with_EntityEmbedding(X_train, y_train, X_val, y_val))
+print("Fitting NN_with_EntityEmbedding...")
+for i in range(N_MODEL):
+    models.append(NN_with_EntityEmbedding(X_train, y_train, X_val, y_val))
 
 # TODO: bug
 # print("Fitting NN...")
@@ -99,6 +99,7 @@ if save_embeddings:
     month_embedding = model.get_layer('month_embedding').get_weights()[0]
     day_embedding = model.get_layer('day_embedding').get_weights()[0]
     german_states_embedding = model.get_layer('state_embedding').get_weights()[0]
+    
     with open(saved_embeddings_fname, 'wb') as f:
         pickle.dump([store_embedding, dow_embedding, year_embedding,
                      month_embedding, day_embedding, german_states_embedding], f, -1)
