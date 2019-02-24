@@ -16,9 +16,11 @@ from keras.layers.embeddings import Embedding
 from keras.callbacks import ModelCheckpoint
 
 import pickle
+
 # xgboost issue: https://github.com/dmlc/xgboost/issues/1715
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 
 def embed_features(X, saved_embeddings_fname):
     # f_embeddings = open("embeddings_shuffled.pickle", "rb")
@@ -45,6 +47,8 @@ def embed_features(X, saved_embeddings_fname):
 
 
 def split_features(X):
+    """Column to list of list. 7 feature here.
+    """
     X_list = []
 
     store_index = X[..., [1]]
@@ -78,6 +82,7 @@ class Model(object):
     
     def evaluate(self, X_val, y_val):
         assert(min(y_val) > 0)
+        # prediction
         guessed_sales = self.guess(X_val)
         relative_err = numpy.absolute((y_val - guessed_sales) / y_val)
         result = numpy.sum(relative_err) / len(y_val)
@@ -188,8 +193,8 @@ class KNN(Model):
 
 
 class NN_with_EntityEmbedding(Model):
-    """Default epoch = 10
-    """
+    """Default epoch = 10"""
+
     def __init__(self, X_train, y_train, X_val, y_val):
         super().__init__()
         
@@ -200,8 +205,10 @@ class NN_with_EntityEmbedding(Model):
             verbose=1, 
             save_best_only=True)
 
-        self.max_log_y = max(numpy.max(numpy.log(y_train)), numpy.max(numpy.log(y_val)))
+        self.max_log_y = max(numpy.max(numpy.log(y_train)), 
+                             numpy.max(numpy.log(y_val)))
         
+        # build keras model when init
         self.__build_keras_model()
 
         self.fit(X_train, y_train, X_val, y_val)
@@ -211,38 +218,42 @@ class NN_with_EntityEmbedding(Model):
         return X_list
 
     def __build_keras_model(self):
+        # some dimension is interesting !!!
         input_store = Input(shape=(1,))
-        output_store = Embedding(1115, 10, name='store_embedding')(input_store)
+        output_store = Embedding(1115, 10, name='store_embedding')(input_store) # value has 1115 level, reduce to 10d
         output_store = Reshape(target_shape=(10,))(output_store)
 
+        # day of week
         input_dow = Input(shape=(1,))
-        output_dow = Embedding(7, 6, name='dow_embedding')(input_dow)
+        output_dow = Embedding(7, 6, name='dow_embedding')(input_dow) # 7 unique level reduce to 6d
         output_dow = Reshape(target_shape=(6,))(output_dow)
 
-        input_promo = Input(shape=(1,))
-        output_promo = Dense(1)(input_promo)
+        input_promo = Input(shape=(1,)) 
+        output_promo = Dense(1)(input_promo) # 1 -> 1
 
         input_year = Input(shape=(1,))
-        output_year = Embedding(3, 2, name='year_embedding')(input_year)
+        output_year = Embedding(3, 2, name='year_embedding')(input_year) # input 1 digit, output 2
         output_year = Reshape(target_shape=(2,))(output_year)
 
         input_month = Input(shape=(1,))
-        output_month = Embedding(12, 6, name='month_embedding')(input_month)
+        output_month = Embedding(12, 6, name='month_embedding')(input_month) # 12 -> 6
         output_month = Reshape(target_shape=(6,))(output_month)
 
         input_day = Input(shape=(1,))
-        output_day = Embedding(31, 10, name='day_embedding')(input_day)
+        output_day = Embedding(31, 10, name='day_embedding')(input_day) # 31 -> 10
         output_day = Reshape(target_shape=(10,))(output_day)
 
         input_germanstate = Input(shape=(1,))
-        output_germanstate = Embedding(12, 6, name='state_embedding')(input_germanstate)
+        output_germanstate = Embedding(12, 6, name='state_embedding')(input_germanstate) # 12 -> 6
         output_germanstate = Reshape(target_shape=(6,))(output_germanstate)
 
         input_model = [input_store, input_dow, input_promo,
-                       input_year, input_month, input_day, input_germanstate]
+                       input_year, input_month, input_day, 
+                       input_germanstate]
 
         output_embeddings = [output_store, output_dow, output_promo,
-                             output_year, output_month, output_day, output_germanstate]
+                             output_year, output_month, output_day, 
+                             output_germanstate]
 
         output_model = Concatenate()(output_embeddings)
         output_model = Dense(1000, kernel_initializer="uniform")(output_model)
@@ -254,9 +265,11 @@ class NN_with_EntityEmbedding(Model):
 
         self.model = KerasModel(inputs=input_model, outputs=output_model)
 
+        # MAE
         self.model.compile(loss='mean_absolute_error', optimizer='adam')
 
     def _val_for_fit(self, val):
+        """what loss is it ??"""
         val = numpy.log(val) / self.max_log_y
         return val
 
@@ -264,22 +277,28 @@ class NN_with_EntityEmbedding(Model):
         return numpy.exp(val * self.max_log_y)
 
     def fit(self, X_train, y_train, X_val, y_val):
-        self.model.fit(self.preprocessing(X_train), self._val_for_fit(y_train),
-                       validation_data=(self.preprocessing(X_val), self._val_for_fit(y_val)),
-                       epochs=self.epochs, batch_size=128,
-                       # callbacks=[self.checkpointer],
-                       )
+        self.model.fit(
+            x=self.preprocessing(X_train), 
+            y=self._val_for_fit(y_train),
+            validation_data=(self.preprocessing(X_val), self._val_for_fit(y_val)),
+            epochs=self.epochs, 
+            batch_size=128,
+            # callbacks=[self.checkpointer],
+        )
         # self.model.load_weights('best_model_weights.hdf5')
         print("Result on validation data: ", self.evaluate(X_val, y_val))
 
     def guess(self, features):
         features = self.preprocessing(features)
+
+        # flatten
         result = self.model.predict(features).flatten()
+
         return self._val_for_pred(result)
 
 
 class NN(Model):
-
+    """no embedding"""
     def __init__(self, X_train, y_train, X_val, y_val):
         super().__init__()
         self.epochs = 10

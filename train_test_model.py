@@ -12,6 +12,7 @@ def sample(X, y, n):
     indices = numpy.random.randint(num_row, size=n)
     return X[indices, :], y[indices]
 
+
 def evaluate_models(models, X, y):
     assert(min(y) > 0)
     guessed_sales = numpy.array([model.guess(X) for model in models])
@@ -60,7 +61,8 @@ X_val = X[train_size:]
 y_train = y[:train_size]
 y_val = y[train_size:]
 
-X_train, y_train = sample(X_train, y_train, 200000)  # Simulate data sparsity
+# Simulate data sparsity
+X_train, y_train = sample(X_train, y_train, 200000)
 print("Number of samples used for training: " + str(y_train.shape[0]))
 
 models = []
@@ -89,17 +91,17 @@ print("Fitting SVM...")
 # models.append(SVM(X_train, y_train, X_val, y_val))
 
 # Turn on if using NN-with-embedding
-# if save_embeddings:
-#     model = models[0].model
-#     store_embedding = model.get_layer('store_embedding').get_weights()[0]
-#     dow_embedding = model.get_layer('dow_embedding').get_weights()[0]
-#     year_embedding = model.get_layer('year_embedding').get_weights()[0]
-#     month_embedding = model.get_layer('month_embedding').get_weights()[0]
-#     day_embedding = model.get_layer('day_embedding').get_weights()[0]
-#     german_states_embedding = model.get_layer('state_embedding').get_weights()[0]
-#     with open(saved_embeddings_fname, 'wb') as f:
-#         pickle.dump([store_embedding, dow_embedding, year_embedding,
-#                      month_embedding, day_embedding, german_states_embedding], f, -1)
+if save_embeddings:
+    model = models[0].model
+    store_embedding = model.get_layer('store_embedding').get_weights()[0]
+    dow_embedding = model.get_layer('dow_embedding').get_weights()[0]
+    year_embedding = model.get_layer('year_embedding').get_weights()[0]
+    month_embedding = model.get_layer('month_embedding').get_weights()[0]
+    day_embedding = model.get_layer('day_embedding').get_weights()[0]
+    german_states_embedding = model.get_layer('state_embedding').get_weights()[0]
+    with open(saved_embeddings_fname, 'wb') as f:
+        pickle.dump([store_embedding, dow_embedding, year_embedding,
+                     month_embedding, day_embedding, german_states_embedding], f, -1)
 
 print("Evaluate combined models...")
 print("Training error...")

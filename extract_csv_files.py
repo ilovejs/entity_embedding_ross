@@ -3,16 +3,20 @@ import csv
 
 
 def csv2dicts(csvfile):
+    """return list of dict object, key as col
+    """
     data = []
     keys = []
     for row_index, row in enumerate(csvfile):
         if row_index == 0:
+            # header
             keys = row
             print(row)
             continue
         # if row_index % 10000 == 0:
         #     print(row_index)
-        data.append({key: value for key, value in zip(keys, row)})
+        data.append({key: value for key, value 
+                                in zip(keys, row)})
     return data
 
 
@@ -32,6 +36,7 @@ with open(train_data) as csvfile:
     data = csv.reader(csvfile, delimiter=',')
     with open('train_data.pickle', 'wb') as f:
         data = csv2dicts(data)
+        # reverse order, extended slice
         data = data[::-1]
         pickle.dump(data, f, -1)
         print(data[:3])
