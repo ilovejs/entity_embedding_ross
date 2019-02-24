@@ -188,13 +188,22 @@ class KNN(Model):
 
 
 class NN_with_EntityEmbedding(Model):
-
+    """Default epoch = 10
+    """
     def __init__(self, X_train, y_train, X_val, y_val):
         super().__init__()
-        self.epochs = 1
-        self.checkpointer = ModelCheckpoint(filepath="best_model_weights.hdf5", verbose=1, save_best_only=True)
+        
+        self.epochs = 10
+
+        self.checkpointer = ModelCheckpoint(
+            filepath="best_model_weights.hdf5", 
+            verbose=1, 
+            save_best_only=True)
+
         self.max_log_y = max(numpy.max(numpy.log(y_train)), numpy.max(numpy.log(y_val)))
+        
         self.__build_keras_model()
+
         self.fit(X_train, y_train, X_val, y_val)
 
     def preprocessing(self, X):
